@@ -64,7 +64,7 @@ for i in range(len(t) - 1):
 # 애니메이션 설정
 fig, ax = plt.subplots(figsize=(8, 5))
 
-# 📌 카트의 최대 이동 범위 계산 (자동으로 x축 크기 조정)
+# 카트의 최대 이동 범위 계산 (자동으로 x축 크기 조정)
 x_min = np.min(X_log[0, :]) - 0.5  # 최소 x값에서 여유 공간 추가
 x_max = np.max(X_log[0, :]) + 0.5  # 최대 x값에서 여유 공간 추가
 
