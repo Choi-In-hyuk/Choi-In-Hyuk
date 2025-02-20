@@ -5,7 +5,7 @@ import control
 
 # 시스템 파라미터
 M = 0.5  # 카트 질량 (kg)
-m = 0.2  # 막대 끝 질량 (kg)
+m = 0.5  # 막대 끝 질량 (kg)
 L = 0.3  # 막대 길이 (m)
 g = 9.81  # 중력 가속도 (m/s^2)
 
@@ -85,28 +85,39 @@ line, = ax.plot([], [], lw=3, color="blue")
 # 끝에 질량 추가 (빨간 원)
 mass, = ax.plot([], [], 'ro', markersize=6)
 
+
+text_template = "t = {:.2f}s\nx = {:.3f} m\nx_dot = {:.3f} m/s\nθ = {:.3f} rad\nθ_dot = {:.3f} rad/s\nF = {:.3f} N"
+text_display = ax.text(x_min + 0.1, 0.3, "", fontsize=10, bbox=dict(facecolor='white', alpha=0.6))
+
+                       
+                       
 # 애니메이션 초기화
 def init():
     ax.add_patch(cart)
     line.set_data([], [])
     mass.set_data([], [])  # 질량 초기 위치
-    return cart, line, mass
+    text_display.set_text("")
+    return cart, line, mass, text_display
 
 # 애니메이션 업데이트 함수 (`theta` 변환 적용)
 def update(frame):
     x = X_log[0, frame]
-    theta = np.pi - X_log[2, frame]  # 위 방향이 기준이 되도록 변환
+    x_dot = X_log[1, frame]
+    theta = np.pi - X_log[2, frame]  
+    theta_dot = X_log[3, frame]
+    F = F_log[frame]
 
-    # 카트 위치 업데이트
     cart.set_xy((x - cart_width / 2, -cart_height / 2))
 
-    # 막대 끝 질량 위치 업데이트
     pendulum_x = x + L * np.sin(theta)
     pendulum_y = -L * np.cos(theta)
     line.set_data([x, pendulum_x], [0, pendulum_y])
-    mass.set_data([pendulum_x], [pendulum_y])  # 질량 위치 업데이트
+    mass.set_data([pendulum_x], [pendulum_y])  
+
+
+    text_display.set_text(text_template.format(frame * Ti, x, x_dot, theta, theta_dot, F))
     
-    return cart, line, mass
+    return cart, line, mass, text_display
 
 F_log = np.zeros(len(t))
 
@@ -120,8 +131,10 @@ for i in range(len(t) - 1):
     X_log[:, i + 1] = X.flatten()
     F_log[i] = U  # 입력 힘 저장
 
+frames_to_save = int((10 / Ti)/3)
 # 애니메이션 실행
-ani = animation.FuncAnimation(fig, update, frames=len(t), init_func=init, interval=Ti * 1000, blit=True)
+ani = animation.FuncAnimation(fig, update, frames_to_save, init_func=init, interval=Ti * 2000, blit=True)
+ani.save("cart_pole_simulation.mp4", writer="ffmpeg", fps=30)
 plt.show()
 
 plt.figure(figsize=(12, 8))
@@ -173,3 +186,6 @@ plt.grid()
 
 plt.tight_layout()
 plt.show()
+
+
+
