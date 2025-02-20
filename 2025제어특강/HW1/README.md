@@ -6,5 +6,4 @@ conda activate runz
 pip install sympy numpy scipy matplotlib control
 ```
 ![runz](https://github.com/user-attachments/assets/4a065a3b-600f-49f7-a1d5-46fdd928951e)
-![Figure_1](https://github.com/user-attachments/assets/5c05dc9f-edbc-431e-a2dc-98e4dcb51941)
-![Figure_1](https://github.com/user-attachments/assets/6a90ab00-318f-4be7-a44b-62da1a94434e)
+![Figure_1](https://github.com/user-attachments/assets/65bdd294-10c6-4628-9fff-83cf50040128)
