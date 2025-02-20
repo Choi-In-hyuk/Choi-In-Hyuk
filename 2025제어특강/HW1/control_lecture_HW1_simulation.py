@@ -7,7 +7,7 @@ import sympy as sp
 
 M = 1 
 m = 1
-L = 0.2
+L = 1
 g = 9.81 
 
 X1, X2, X3, X4, U = sp.symbols('X1 X2 X3 X4 U')
@@ -25,10 +25,10 @@ dfu = fx.jacobian([U])
 
 subs_values = {X1: 0, X2: 0, X3: 0, X4: 0, U: 0}
 A_sym = dfx.subs(subs_values)
+B_sym = dfu.subs(subs_values)
 
 A = np.array(A_sym, dtype=float)
-
-B = np.array([[0], [1], [0], [-1]])
+B = np.array(B_sym, dtype=float)
 C = np.array([[1, 0, 0, 0]])
 
 
