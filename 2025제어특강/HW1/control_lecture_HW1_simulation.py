@@ -2,30 +2,40 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import control
+import sympy as sp
 
-# 시스템 파라미터
-M = 0.5  # 카트 질량 (kg)
-m = 0.5  # 막대 끝 질량 (kg)
-L = 0.3  # 막대 길이 (m)
-g = 9.81  # 중력 가속도 (m/s^2)
 
-# 상태 공간 행렬
-A = np.array([
-    [0, 1, 0, 0],
-    [0, 0, -9.8, 0],
-    [0, 0, 0, 1],
-    [0, 0, 19.6, 0]
+M = 1 
+m = 1
+L = 0.2
+g = 9.81 
+
+X1, X2, X3, X4, U = sp.symbols('X1 X2 X3 X4 U')
+
+
+fx = sp.Matrix([
+    X2,
+    (sp.sin(X3) * X4**2 - g * sp.sin(X3) * sp.cos(X3)) / (M + m - m * sp.cos(X3)**2) + (1 / (M + m - m * sp.cos(X3)**2)) * U,
+    X4,
+    (-sp.sin(X3) * sp.cos(X3) * X4**2 + (M + m) * g * sp.sin(X3)) / ((M + m) * L - m * L * sp.cos(X3)**2) + (-sp.cos(X3) / ((M + m) * L - m * L * sp.cos(X3)**2)) * U
 ])
+
+dfx = fx.jacobian([X1, X2, X3, X4])
+dfu = fx.jacobian([U])
+
+subs_values = {X1: 0, X2: 0, X3: 0, X4: 0, U: 0}
+A_sym = dfx.subs(subs_values)
+
+A = np.array(A_sym, dtype=float)
 
 B = np.array([[0], [1], [0], [-1]])
 C = np.array([[1, 0, 0, 0]])
 
-# LQR 게인 계산
+
 Q = 10 * np.eye(4)
 R = np.array([[1]])
 K_lqr, _, _ = control.lqr(A, B, Q, R)
 
-# 시스템 동역학 함수
 def plant1(X, U):
     DX = np.zeros((4, 1))
     DX[0, 0] = X[1, 0]
@@ -34,7 +44,7 @@ def plant1(X, U):
     DX[3, 0] = (-np.sin(X[2, 0]) * np.cos(X[2, 0]) * X[3, 0]**2 + 2 * 9.8 * np.sin(X[2, 0])) / (2 - (np.cos(X[2, 0]))**2) + (-np.cos(X[2, 0])) / (2 - (np.cos(X[2, 0]))**2) * U
     return DX
 
-# Runge-Kutta 6차 적분
+
 def rk6(X, U, T):
     k1 = plant1(X, U) * T
     k2 = plant1(X + k1 * 0.5, U) * T
@@ -65,8 +75,8 @@ for i in range(len(t) - 1):
 fig, ax = plt.subplots(figsize=(8, 5))
 
 # 카트의 최대 이동 범위 계산 (자동으로 x축 크기 조정)
-x_min = np.min(X_log[0, :]) - 0.5  # 최소 x값에서 여유 공간 추가
-x_max = np.max(X_log[0, :]) + 0.5  # 최대 x값에서 여유 공간 추가
+x_min = np.min(X_log[0, :]) - 0.5  
+x_max = np.max(X_log[0, :]) + 0.5  
 
 ax.set_xlim(x_min, x_max)  # x축 범위를 자동 설정
 ax.set_ylim(-0.5, 0.5)  
@@ -133,8 +143,8 @@ for i in range(len(t) - 1):
 
 frames_to_save = int((10 / Ti)/3)
 # 애니메이션 실행
-ani = animation.FuncAnimation(fig, update, frames_to_save, init_func=init, interval=Ti * 2000, blit=True)
-ani.save("cart_pole_simulation.mp4", writer="ffmpeg", fps=30)
+ani = animation.FuncAnimation(fig, update, frames_to_save, init_func=init, interval=Ti * 1000, blit=True)
+# ani.save("cart_pole_simulation.mp4", writer="ffmpeg", fps=30)  애니메이션 저장
 plt.show()
 
 plt.figure(figsize=(12, 8))
