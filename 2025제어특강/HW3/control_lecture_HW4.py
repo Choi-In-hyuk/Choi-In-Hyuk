@@ -32,12 +32,26 @@ for i = 1:Np
 end
 
 
-Ct=[];
-for i=1:Np
-    Ct=[Ct
-        zeros(size(Ct,1),size(C,2))
-        zeros(size(C,1),size(C,2)) C];
-end;
+temp = []; % 임시 행렬 (이전 C 행렬들을 저장)
+Ct = [];   % 최종 Ct 행렬
+
+for i = 1:Np
+    % 현재 반복에서 새롭게 추가할 C 행렬 계산
+    new_col = C; % Ct에서는 C가 그대로 사용됨
+
+    % 기존 Ct 행렬이 비어있지 않다면, zero padding 추가 (열 크기 맞추기)
+    if ~isempty(Ct)
+        Ct = [Ct, zeros(size(Ct,1), size(new_col,2))];
+    end
+
+    % 새로운 행을 추가
+    Ct = [Ct; new_col, temp];
+
+    % temp 업데이트 (입력 블록을 오른쪽으로 확장)
+    temp = [new_col, temp];
+end
+
+
 
 % Define the lower and upper bounds, and the initial value.
 lb=-0.25*ones(Np,1);
@@ -74,3 +88,49 @@ for k=1:50
     % Use the shifted solution as the
     % initial solution for the next iteration.
 end;
+
+% ===========================
+% MPC Optimization Results
+% ===========================
+
+% Display the final optimization results
+disp('========== Optimization Results ==========');
+disp(['Final state x(T): ', num2str(x(:, end)')]); % Last state value
+disp(['Final output y(T): ', num2str(y(:, end)')]); % Last output value
+disp(['Final control input u(T-1): ', num2str(u(end))]); % Last applied control input
+
+% ===========================
+% Plot control input u(k)
+% ===========================
+
+figure;
+plot(1:length(u), u, 'bo-', 'LineWidth', 2);
+xlabel('Time step'); % X-axis label
+ylabel('Control Input u'); % Y-axis label
+title('MPC Control Input'); % Graph title
+grid on; % Enable grid for better visualization
+
+% ===========================
+% Plot state evolution x(k)
+% ===========================
+
+figure;
+plot(1:size(x,2), x(1,:), 'r-', 'LineWidth', 2); hold on;
+plot(1:size(x,2), x(2,:), 'g-', 'LineWidth', 2);
+plot(1:size(x,2), x(3,:), 'b-', 'LineWidth', 2);
+xlabel('Time step'); % X-axis label
+ylabel('State x'); % Y-axis label
+title('MPC State Evolution'); % Graph title
+legend('x_1', 'x_2', 'x_3'); % Legend for each state
+grid on; % Enable grid
+
+% ===========================
+% Plot output y(k)
+% ===========================
+
+figure;
+plot(1:length(y), y, 'ko-', 'LineWidth', 2);
+xlabel('Time step'); % X-axis label
+ylabel('Output y'); % Y-axis label
+title('MPC Output Response'); % Graph title
+grid on; % Enable grid
